@@ -38,10 +38,8 @@ async function download(url, outputPath, format, extractAudio = false) {
 let handler = async (m, { conn, command, text, usedPrefix }) => {
     const prefix = usedPrefix || '.';
 
-    // Se l'utente clicca un bottone, leggiamo l'ID come testo del comando
     if (!text && m.quoted && m.quoted.buttonId) text = m.quoted.buttonId;
     
-    // Rimuoviamo il comando se presente nel testo (es. ".playaudio url" -> "url")
     if (text) text = text.replace(new RegExp(`^${prefix}(playaudio|playvideo|play)\\s+`, 'i'), '');
 
     if (!text) return conn.reply(m.chat, `*Usa:* ${prefix + command} <nome/url>`, m);
@@ -97,18 +95,28 @@ async function downloadMedia(m, conn, command, url) {
     const formats = isVideo ? V : A;
     
     try {
+        // --- AGGIUNTA REAZIONE ---
+        if (!isVideo) {
+            await conn.sendMessage(m.chat, { react: { text: '🎵', key: m.key } });
+        } else {
+            await conn.sendMessage(m.chat, { react: { text: '⏳', key: m.key } });
+        }
+        // -------------------------
+
         await m.reply(`⏳ Scaricando ${isVideo ? 'il video' : "l'audio"}...`);
         
         let success = false;
         for (const f of formats) {
             try {
                 await download(url, tmpFile, f, !isVideo);
-                
-                // yt-dlp aggiunge .mp3 o .mp4 a seconda del comando
                 const actualFile = isVideo ? `${tmpFile}.mp4` : `${tmpFile}.mp3`;
                 
                 if (fs.existsSync(actualFile)) {
                     const buffer = fs.readFileSync(actualFile);
+                    
+                    // Rimuove la reazione o ne mette una di successo prima dell'invio
+                    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
+
                     if (isVideo) {
                         await conn.sendMessage(m.chat, { video: buffer, mimetype: 'video/mp4', caption: '> vare ✧ bot' }, { quoted: m });
                     } else {
@@ -122,6 +130,7 @@ async function downloadMedia(m, conn, command, url) {
         }
         if (!success) throw new Error('Impossibile scaricare il media.');
     } catch (e) {
+        await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
         m.reply('❌ Errore: ' + e.message);
     }
 }
