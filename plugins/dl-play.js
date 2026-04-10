@@ -5,29 +5,18 @@ import path from 'path'
 import ytSearch from 'yt-search'
 
 const execPromise = promisify(exec)
-const vic = new Map()
-const CACHE_TTL = 15 * 60 * 1000
-const gonnabealongyr = 20 * 60
-const A = [ 'bestaudio[ext=m4a]/bestaudio', '251', '140', 'bestaudio' ]
-const V = [ '134+140', '135+140', '136+140' ]
 const tmpDir = path.join(process.cwd(), 'temp')
 if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir)
 
-function parseDurationToSeconds(duration) {
-    if (!duration) return 0;
-    if (typeof duration === 'number') return duration;
-    const parts = duration.toString().split(':').map(Number);
-    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    if (parts.length === 2) return parts[0] * 60 + parts[1];
-    return parseInt(duration) || 0;
-}
+const A = [ 'bestaudio[ext=m4a]/bestaudio', '251', '140', 'bestaudio' ]
+const V = [ '134+140', '135+140', '136+140' ]
 
 async function runYtDlp(args) { 
     const ytdlpCommands = ['yt-dlp', 'python3 -m yt_dlp', 'python -m yt_dlp'];
     for (const cmd of ytdlpCommands) {
         try {
-            const { stdout, stderr } = await execPromise(`${cmd} ${args.join(' ')}`, { maxBuffer: 50 * 1024 * 1024, shell: true });
-            return { stdout, stderr };
+            const { stdout } = await execPromise(`${cmd} ${args.join(' ')}`, { maxBuffer: 50 * 1024 * 1024, shell: true });
+            return { stdout };
         } catch (error) { continue; }
     }
     throw new Error('YT_DLP_NOT_FOUND');
@@ -49,16 +38,15 @@ async function download(url, outputPath, format, extractAudio = false) {
 let handler = async (m, { conn, command, text, usedPrefix }) => {
     const prefix = usedPrefix || '.';
 
-    // Se il comando viene da un pulsante (id contiene il comando)
+    // Se l'utente clicca un bottone, leggiamo l'ID come testo del comando
     if (!text && m.quoted && m.quoted.buttonId) text = m.quoted.buttonId;
+    
+    // Rimuoviamo il comando se presente nel testo (es. ".playaudio url" -> "url")
+    if (text) text = text.replace(new RegExp(`^${prefix}(playaudio|playvideo|play)\\s+`, 'i'), '');
 
-    if (!text) {
-        return conn.reply(m.chat, `*Usa:* ${prefix + command} <nome/url>`, m);
-    }
+    if (!text) return conn.reply(m.chat, `*Usa:* ${prefix + command} <nome/url>`, m);
 
     await conn.sendPresenceUpdate('composing', m.chat);
-    
-    // Rilevamento se è un URL o ricerca
     const isUrl = text.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&\n?#]+)/);
 
     try {
@@ -69,7 +57,7 @@ let handler = async (m, { conn, command, text, usedPrefix }) => {
         }
 
         const search = await ytSearch(text);
-        if (!search.videos.length) throw '❌ Nessun risultato.';
+        if (!search.videos.length) throw new Error('Nessun risultato trovato.');
         const results = search.videos.slice(0, 5);
 
         const cards = results.map((v, i) => ({
@@ -82,7 +70,7 @@ let handler = async (m, { conn, command, text, usedPrefix }) => {
                     name: "quick_reply",
                     buttonParamsJson: JSON.stringify({
                         display_text: "🎵 Audio",
-                        id: `${prefix}playaudio ${v.url}` // L'handler del bot deve saper leggere questo
+                        id: `${prefix}playaudio ${v.url}`
                     })
                 },
                 {
@@ -95,10 +83,7 @@ let handler = async (m, { conn, command, text, usedPrefix }) => {
             ]
         }));
 
-        await conn.sendMessage(m.chat, {
-            text: `🔍 Risultati per: *${text}*`,
-            cards: cards
-        }, { quoted: m });
+        await conn.sendMessage(m.chat, { text: `🔍 Risultati per: *${text}*`, cards }, { quoted: m });
 
     } catch (e) {
         m.reply('❌ Errore: ' + e.message);
@@ -107,17 +92,20 @@ let handler = async (m, { conn, command, text, usedPrefix }) => {
 
 async function downloadMedia(m, conn, command, url) {
     const isVideo = command === 'playvideo';
-    const tmpFile = path.join(tmpDir, `dl_${Date.now()}`);
+    const fileName = `dl_${Date.now()}`;
+    const tmpFile = path.join(tmpDir, fileName);
     const formats = isVideo ? V : A;
     
     try {
-        m.reply(`⏳ Scaricando ${isVideo ? 'video' : 'audio'}...`);
+        await m.reply(`⏳ Scaricando ${isVideo ? 'il video' : "l'audio"}...`);
         
         let success = false;
         for (const f of formats) {
             try {
                 await download(url, tmpFile, f, !isVideo);
-                const actualFile = isVideo ? tmpFile + '.mp4' : (fs.existsSync(tmpFile + '.mp3') ? tmpFile + '.mp3' : tmpFile);
+                
+                // yt-dlp aggiunge .mp3 o .mp4 a seconda del comando
+                const actualFile = isVideo ? `${tmpFile}.mp4` : `${tmpFile}.mp3`;
                 
                 if (fs.existsSync(actualFile)) {
                     const buffer = fs.readFileSync(actualFile);
@@ -132,7 +120,7 @@ async function downloadMedia(m, conn, command, url) {
                 }
             } catch (e) { continue; }
         }
-        if (!success) throw new Error('Download fallito.');
+        if (!success) throw new Error('Impossibile scaricare il media.');
     } catch (e) {
         m.reply('❌ Errore: ' + e.message);
     }
