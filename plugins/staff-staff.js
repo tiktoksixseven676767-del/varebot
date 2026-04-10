@@ -6,16 +6,19 @@ let handler = async (m, { conn, command, usedPrefix }) => {
 │
 │⭒─ׄ─『 👑 \`Sviluppatore\` 』 ─ׄ─⭒
 │
-│ • \`Nome:\` *MAZZU*
+│ • \`Nome:\` *sam aka vare*
 │ • \`Ruolo:\` *Creatore / dev*
-│ • \`Contatto:\` @3391952345
+│ • \`Contatto:\` @393476686131
 │
 │⭒─ׄ─『 🛡️ \`Moderatori\` 』 ─ׄ─⭒
 │
 │ • \`Nome:\` *felix*
 │ • \`Ruolo:\` *Moderatore*
-│ • \`Contatto:\` @393760517466
+│ • \`Contatto:\` @67078163216
 │
+│ • \`Nome:\` *gio*
+│ • \`Ruolo:\` *Moderatore*
+│ • \`Contatto:\` @393511082922
 │
 │─ׄ─『 📌 \`Info Utili\` 』 ─ׄ─⭒
 │
