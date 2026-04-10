@@ -66,7 +66,6 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 handler.help = ['programma <tempo|comando>']
 handler.tags = ['creatore']
 handler.command = /^(programma|schedule)$/i
-handler.owner = true // Aggiunto flag owner
-handler.owner = true // Manteniamo anche Sam per sicurezza
+handler.owner = true
 
 export default handler
