@@ -78,6 +78,5 @@ handler.help = ['nowa'];
 handler.tags = ['creatore', 'premium'];
 handler.command = ['nowa'];
 handler.owner = true;
-handler.premium = true;
 
 export default handler;
