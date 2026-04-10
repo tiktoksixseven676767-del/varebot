@@ -77,6 +77,5 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 handler.help = ['nowa'];
 handler.tags = ['creatore', 'premium'];
 handler.command = ['nowa'];
-handler.owner = true;
 
 export default handler;
