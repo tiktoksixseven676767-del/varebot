@@ -1,4 +1,5 @@
 import axios from "axios";
+
 async function generateImage(prompt) {
     try {
         let attempts = 0;
@@ -26,29 +27,14 @@ async function generateImage(prompt) {
     }
 }
 
-let handler = async (m, { conn, text, usedPrefix, command, isOwner }) => {
+let handler = async (m, { conn, text, usedPrefix, command }) => {
     if (!text) {
         return m.reply(`╭─『 🎨 *Generatore Immagini AI* 』
 ├ Usa: ${usedPrefix + command} <descrizione>
 ├ Esempio: ${usedPrefix + command} gatto persiano
 │
 ├ *Limiti:*
-├ • Free: 5 generazioni
-├ • Premium: ∞ generazioni
-╰───────────◈`);
-    }
-    if (!global.db.data.users[m.sender].imgaiUses) {
-        global.db.data.users[m.sender].imgaiUses = 0;
-    }
-    const isPremium = global.db.data.users[m.sender].premium;
-    if (!isOwner && !isPremium && global.db.data.users[m.sender].imgaiUses >= 5) {
-        return m.reply(`╭─『 ❌ *Limite Raggiunto* 』
-├ Hai utilizzato tutti i tentativi gratuiti!
-├ 
-├ *✨ Passa a Premium per avere:*
-├ • Generazioni illimitate
-├ • Risultati prioritari
-├ • Qualità migliore
+├ • ✨ Tutti gli utenti: ∞ generazioni
 ╰───────────◈`);
     }
 
@@ -56,18 +42,17 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner }) => {
         await conn.sendPresenceUpdate('composing', m.chat);
         const startTime = Date.now();
         const enhancedPrompt = `${text}, masterpiece, professional photography, 8k uhd, highly detailed, photorealistic, sharp focus, dramatic lighting, artstation trending`;
+        
         const imageBase64 = await Promise.race([
             generateImage(enhancedPrompt),
             new Promise((_, reject) => 
                 setTimeout(() => reject(new Error('⌛ Timeout: la generazione ha impiegato troppo tempo')), 45000)
             )
         ]);
+        
         const endTime = Date.now();
         const timeElapsed = ((endTime - startTime) / 1000).toFixed(1);
-        if (!isOwner && !isPremium) {
-            global.db.data.users[m.sender].imgaiUses++;
-        }
-        const usesLeft = isPremium ? '∞' : (5 - global.db.data.users[m.sender].imgaiUses);
+
         await conn.sendMessage(
             m.chat,
             {
@@ -75,8 +60,8 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner }) => {
                 caption: `╭─『 🎨 *Immagine Generata* 』
 ├ ✨ *Prompt:* ${text}
 ├ ⏱️ *Tempo:* ${timeElapsed}s
-├ 💫 *Generazioni:* ${usesLeft} rimaste
-├ 👑 *Status:* ${isPremium ? 'Premium' : 'Free'}
+├ 💫 *Generazioni:* ∞ (Illimitate)
+├ 👑 *Status:* Utente
 ╰───────────◈
 
 ◈ ━━ *vare ✧ bot* ━━ ◈`,
@@ -90,13 +75,13 @@ let handler = async (m, { conn, text, usedPrefix, command, isOwner }) => {
         m.reply(`╭─『 ❌ *Errore Generazione* 』
 ├ • ${error.message}
 ├ • Riprova tra qualche minuto
-├ • Usa un prompt diverso
 ╰──────────────────◈`);
     }
 };
+
 handler.help = ['imgai (testo)'];
-handler.tags = ['strumenti', 'premium', 'ia', 'iaimmagini'];
+handler.tags = ['strumenti', 'ia', 'iaimmagini'];
 handler.command = ['imgai', 'immagina'];
-handler.register = true
+handler.register = true;
 
 export default handler;
