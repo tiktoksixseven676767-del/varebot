@@ -149,6 +149,5 @@ handler.help = ['spam'];
 handler.tags = ['creatore'];
 handler.command = ['spam'];
 handler.mods = true;
-handler.premium = true;
 
 export default handler;
