@@ -71,6 +71,6 @@ handler.help = ['rivela']
 handler.tags = ['strumenti']
 handler.command = ['readviewonce', 'rivela', 'viewonce']
 handler.group = true
-handler.admin = true
+
 
 export default handler
