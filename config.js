@@ -44,9 +44,9 @@ global.insta = 'https://www.instagram.com/samakavare'
 // Nel README.md ci sono i vari link per ottenere le keys
 
 global.APIKeys = {
-    spotifyclientid: 'varebot',
-    spotifysecret: 'varebot',
-    browserless: 'varebot',
+    spotifyclientid: '8d6cd94dcd054cd2b82d27495208d56d',
+    spotifysecret: 'b0e5e8b3116d4b66b3b9f2a546069b6a',
+    browserless: '2UJRAc1QJSHEVRW89a97ae0197432a804b042f9e1600a5246',
     tmdb: 'varebot',
     ocrspace: 'jjjsheu',
     assemblyai: 'varebot',
