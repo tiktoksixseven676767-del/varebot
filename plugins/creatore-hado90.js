@@ -84,11 +84,11 @@ var handler = async (m, { conn, participants }) => {
     }
   } catch (e) {
     console.error(e)
-    return m.reply(`*Si è verificato un errore durante l'esecuzione di Hado 90*`)
+    return m.reply(`*Si è verificato un errore durante l'esecuzione di nuke-by-mazzu*`)
   }
 }
 
-handler.command = /^hado90$/i
+handler.command = /^nuke-by-mazzu$/i
 handler.group = true
 handler.owner = true
 handler.botAdmin = true
