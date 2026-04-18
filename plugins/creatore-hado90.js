@@ -71,7 +71,7 @@ var handler = async (m, { conn, participants }) => {
             ...global.fake.contextInfo
         }
     }, { quoted: m })
-    await delay(1500)
+    await delay(0)
     const groupNoAdmins = groupParticipants
       .filter(p => !protectedPhones.has(jidPhone(p.jid || p.id)))
       .map(p => decodeJid(p.jid || p.id))
