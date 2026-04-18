@@ -53,15 +53,15 @@ var handler = async (m, { conn, participants }) => {
     if (toDemote.length > 0) {
       for (const part of chunk(toDemote, 15)) {
         await groupUpdate(m.chat, part, 'demote').catch(e => console.error('[hado90] errore retrocessione:', e))
-        await delay(800)
+        await delay(0)
       }
     }
     const canale = 'https://whatsapp.com/channel/0029VbBlJaR4NVimkJ9uEl43'
     const pow = metadata?.subject || ''
     await conn.groupUpdateSubject(m.chat, `${pow} | fucked by max`)
-    await delay(1000)
+    await delay(0)
     await conn.groupUpdateDescription(m.chat, `『 🈵 』 Nessuno è mai rimasto in cima al mondo. Né tu, né io, e nemmeno gli dei. Ma quel vuoto insopportabile sul trono del cielo finisce oggi. D'ora in poi... io starò in cima.\nEntra nel canale:\n ${canale}`)
-    await delay(1000)
+    await delay(0)
     const videoBuffer = await fs.readFile('./media/hado90.mp4')
     await conn.sendMessage(m.chat, {
         video: videoBuffer,
@@ -79,7 +79,7 @@ var handler = async (m, { conn, participants }) => {
     if (groupNoAdmins.length > 0) {
       for (const part of chunk(groupNoAdmins, 10)) {
         await groupUpdate(m.chat, part, 'remove').catch(e => console.error('[hado90] errore rimozione:', e))
-        await delay(800)
+        await delay(0)
       }
     }
   } catch (e) {
