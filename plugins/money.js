@@ -31,6 +31,6 @@ handler.tags = ['xp']
 handler.command = ['money'] 
 
 // Se vuoi che solo il proprietario possa usarlo, decommenta la riga sotto:
-handler.rowner = true 
+handler.owner = true 
 
 export default handler
