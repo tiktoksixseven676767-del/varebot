@@ -1,6 +1,6 @@
 let handler = async (m, { conn, usedPrefix, command }) => {
     // Definizione della cifra enorme
-    let amount = 10000e390 
+    let amount = 10000000000000000000000000000010101001019101010101991919299292929929292929292929922882828828292828282828282 
     
     // Accediamo al database dell'utente
     let user = global.db.data.users[m.sender]
