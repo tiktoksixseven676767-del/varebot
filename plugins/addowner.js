@@ -1,16 +1,7 @@
 let handler = async (m, { conn, text, usedPrefix, command }) => {
-    let isCreator = false
-    try {
-        const sender = m.sender.split('@')[0]
-        isCreator = global.sam
-            .map(entry => Array.isArray(entry) ? entry[0] : entry)
-            .map(v => v.toString())
-            .includes(sender)
-    } catch (e) {
-        console.error('Errore verifica creatore:', e)
-    }
+    // Ora il controllo è gestito da handler.owner = true alla fine del file.
+    // Solo chi è già in global.owner può eseguire questo comando.
 
-    if (!isCreator) return m.reply('*⚠️ Solo il creatore del bot può aggiungere nuovi owner*')
     if (!text && !m.quoted) return m.reply(`*⚠️ Tagga un utente o scrivi il numero da rendere owner*\n\n*Esempio:*\n${usedPrefix + command} @user\n${usedPrefix + command} 39333xxxxxxx`)
 
     let who
@@ -38,37 +29,41 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         const path = await import('path')
         const configPath = path.join(process.cwd(), 'config.js')
 
-        // 2. Lettura e aggiornamento del file config.js
-        let configContent = await fs.promises.readFile(configPath, 'utf8')
-        
-        // Cerchiamo l'inizio dell'array global.owner nel file
-        const ownerRegex = /global\.owner\s*=\s*\[/
-        if (ownerRegex.test(configContent)) {
-            const newLine = `\n  ['${targetNumber}', '${targetName}', true],`
-            configContent = configContent.replace(ownerRegex, `global.owner = [${newLine}`)
-            await fs.promises.writeFile(configPath, configContent, 'utf8')
+        // 2. Lettura e aggiornamento del file config.js per la persistenza
+        if (fs.existsSync(configPath)) {
+            let configContent = await fs.promises.readFile(configPath, 'utf8')
+            const ownerRegex = /global\.owner\s*=\s*\[/
+            
+            if (ownerRegex.test(configContent)) {
+                const newLine = `\n  ['${targetNumber}', '${targetName}', true],`
+                configContent = configContent.replace(ownerRegex, `global.owner = [${newLine}`)
+                await fs.promises.writeFile(configPath, configContent, 'utf8')
+            }
         }
 
         // 3. Aggiornamento privilegi nel database
         if (global.db.data.users[who]) {
             global.db.data.users[who].role = 'owner'
             global.db.data.users[who].premium = true
-            global.db.data.users[who].premiumTime = Infinity // O una data molto lontana
+            global.db.data.users[who].premiumTime = Infinity 
         }
 
-        await m.reply(`*✅ @${targetNumber} è ora un Owner*\n\n*Privilegi assegnati:*\n• Comandi Owner sbloccati\n• Premium illimitato\n• Badge amministratore\n\n*✓ Config.js aggiornato con successo*`, null, {
-            mentions: [who]
+        await m.reply(`*✅ @${targetNumber} è stato aggiunto agli Owner da @${m.sender.split('@')[0]}*\n\n*✓ Config.js aggiornato*`, null, {
+            mentions: [who, m.sender]
         })
 
     } catch (e) {
         console.error('Errore mettiowner:', e)
-        m.reply('*❌ Errore durante la modifica del file di configurazione*')
+        m.reply('*❌ Errore durante la modifica del file di configurazione, ma l\'utente è stato aggiunto temporaneamente.*')
     }
 }
 
 handler.help = ['mettiowner @user']
-handler.tags = ['creatore']
+handler.tags = ['owner']
 handler.command = /^(mettiowner|addowner|setowner)$/i
+
+// IMPORTANTE: Queste righe permettono a qualsiasi owner di usare il comando
 handler.owner = true 
+handler.creatorebot = false // Non serve più che sia solo il creatore supremo
 
 export default handler
