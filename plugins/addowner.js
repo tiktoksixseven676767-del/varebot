@@ -69,7 +69,6 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 handler.help = ['mettiowner @user']
 handler.tags = ['creatore']
 handler.command = /^(mettiowner|addowner|setowner)$/i
-handler.creatorebot = true
 handler.owner = true 
 
 export default handler
